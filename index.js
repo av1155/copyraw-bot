@@ -95,12 +95,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const sorted = [...messages.values()]; // newest first
       const filtered = sorted.filter(m => m.author.id !== client.user.id && !m.system);
 
-      console.log(`Fetched ${messages.size} messages, ${filtered.length} after filter`);
-      if (filtered.length > 0) {
-        const first = filtered[0];
-        console.log(`First: ${first.author.tag} | content=${first.content?.length || 0} | embeds=${first.embeds.length}`);
-      }
-
       if (filtered.length === 0) {
         return await interaction.editReply({ content: 'No messages found in this channel.' });
       }
