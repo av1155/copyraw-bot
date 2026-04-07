@@ -6,11 +6,11 @@ Lightweight Discord bot for copying raw message content. Two commands, runs anyw
 
 ### Copy Raw (message context menu)
 
-Right-click any message, go to Apps, and select "Copy Raw" to get the raw markdown content as an ephemeral code block. Messages over 1900 characters are attached as a `.txt` file instead.
+Right-click any message, go to Apps, and select "Copy Raw" to get the raw markdown content as an ephemeral `raw.md` file attachment.
 
 ### /copyraw (slash command)
 
-Fetches the last 25 messages in the channel, collects all consecutive messages from the most recent author (oldest first), reconstructs the full message from chunked responses, and replies ephemerally.
+Fetches the last 25 messages in the channel, skips bot and system messages, then collects consecutive messages from the most recent author that were sent within 60 seconds of each other. Replies with a `raw.md` file containing the stitched content in chronological order.
 
 ## Discord Setup
 
@@ -62,6 +62,12 @@ cd copyraw-bot
 ```
 
 Set your environment variables (see `.env.example` for the required keys), then start the bot:
+
+```bash
+DISCORD_TOKEN=... CLIENT_ID=... GUILD_ID=... REGISTER_COMMANDS=1 docker compose up -d
+```
+
+After the logs show "Registered 2 commands", restart without the flag:
 
 ```bash
 DISCORD_TOKEN=... CLIENT_ID=... GUILD_ID=... docker compose up -d
