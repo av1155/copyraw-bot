@@ -24,7 +24,7 @@ client.once(Events.ClientReady, (c) => {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function replyWithContent(interaction, content) {
+function replyWithContent(interaction, content, label) {
   if (!content || content.trim().length === 0) {
     return interaction.reply({
       content: 'No text content in this message.',
@@ -32,18 +32,11 @@ function replyWithContent(interaction, content) {
     });
   }
 
-  if (content.length <= 1900) {
-    return interaction.reply({
-      content: `\`\`\`\n${content}\n\`\`\``,
-      flags: MessageFlags.Ephemeral,
-    });
-  }
-
   const file = new AttachmentBuilder(Buffer.from(content, 'utf-8'), {
-    name: 'raw.txt',
+    name: 'raw.md',
   });
   return interaction.reply({
-    content: 'Content too long for a code block — attached as a file.',
+    content: label,
     files: [file],
     flags: MessageFlags.Ephemeral,
   });
@@ -82,7 +75,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // --- Context menu: "Copy Raw" ---
     if (interaction.isMessageContextMenuCommand() && interaction.commandName === 'Copy Raw') {
       const msg = interaction.targetMessage;
-      return await replyWithContent(interaction, extractContent(msg));
+      return await replyWithContent(interaction, extractContent(msg), 'Copied 1 message.');
     }
 
     // --- Slash command: /copyraw ---
@@ -96,28 +89,35 @@ client.on(Events.InteractionCreate, async (interaction) => {
       }
 
       const messages = await channel.messages.fetch({ limit: 25 });
-      if (messages.size === 0) {
+      const sorted = [...messages.values()]; // newest first
+      const filtered = sorted.filter(m => m.author.id !== client.user.id && !m.system);
+
+      if (filtered.length === 0) {
         return await interaction.reply({
           content: 'No messages found in this channel.',
           flags: MessageFlags.Ephemeral,
         });
       }
 
-      // messages is newest-first; convert to array and keep that order for walking
-      const sorted = [...messages.values()]; // newest first
-      const authorId = sorted[0].author.id;
+      const authorId = filtered[0].author.id;
+      const authorName = filtered[0].author.displayName;
       const consecutive = [];
 
-      for (const msg of sorted) {
+      for (const msg of filtered) {
         if (msg.author.id !== authorId) break;
         consecutive.push(extractContent(msg));
       }
 
       // Reverse to chronological (oldest first), then stitch
       consecutive.reverse();
-      const stitched = consecutive.join('\n\n');
+      const stitched = consecutive.filter(c => c.trim()).join('\n\n');
+      const count = consecutive.length;
 
-      return await replyWithContent(interaction, stitched);
+      return await replyWithContent(
+        interaction,
+        stitched,
+        `Stitched ${count} message${count === 1 ? '' : 's'} from ${authorName}.`,
+      );
     }
   } catch (error) {
     console.error('Interaction error:', error);
