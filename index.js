@@ -91,7 +91,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       // Reverse to chronological (oldest first), then stitch
       consecutive.reverse();
-      const stitched = consecutive.join('\n\n---\n\n');
+      const stitched = consecutive.join('\n\n');
 
       return await replyWithContent(interaction, stitched);
     }

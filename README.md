@@ -10,7 +10,7 @@ Right-click any message, go to Apps, and select "Copy Raw" to get the raw markdo
 
 ### /copyraw (slash command)
 
-Fetches the last 25 messages in the channel, collects all consecutive messages from the most recent author (oldest first), stitches them with `---` separators, and replies ephemerally.
+Fetches the last 25 messages in the channel, collects all consecutive messages from the most recent author (oldest first), reconstructs the full message from chunked responses, and replies ephemerally.
 
 ## Quick Start
 
