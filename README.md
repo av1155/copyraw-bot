@@ -32,7 +32,7 @@ DISCORD_TOKEN=... CLIENT_ID=... GUILD_ID=... docker compose up -d
 3. Scroll to "Environment variables" and add `DISCORD_TOKEN`, `CLIENT_ID`, and `GUILD_ID` with your values
 4. Deploy the stack
 
-Slash commands are registered automatically on every container start. No manual registration step needed.
+Set `REGISTER_COMMANDS=1` on the first deploy (or after changing command definitions) to register slash commands on container start. Set it back to `0` once commands are registered.
 
 The container restarts automatically unless you stop it. To update after a new image is pushed, click "Pull and redeploy" in Portainer or run `docker compose pull && docker compose up -d`.
 
