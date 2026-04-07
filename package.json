@@ -1,0 +1,13 @@
+{
+  "name": "copyraw-bot",
+  "version": "1.0.0",
+  "description": "Lightweight Discord bot to copy raw message content",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.18.0"
+  }
+}

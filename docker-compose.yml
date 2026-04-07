@@ -1,0 +1,6 @@
+services:
+  copyraw-bot:
+    image: ghcr.io/av1155/copyraw-bot:latest
+    container_name: copyraw-bot
+    restart: unless-stopped
+    env_file: .env
