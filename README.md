@@ -25,14 +25,6 @@ Set your environment variables (see `.env.example` for the required keys), then 
 DISCORD_TOKEN=... CLIENT_ID=... GUILD_ID=... docker compose up -d
 ```
 
-## Command Registration
-
-Discord slash commands and context menus need to be registered once per guild. Run this after your first deploy or whenever you change the command definitions:
-
-```bash
-docker compose run --rm copyraw-bot node deploy-commands.js
-```
-
 ## Deploy (Portainer)
 
 1. In Portainer, go to Stacks and click "Add stack"
@@ -40,11 +32,7 @@ docker compose run --rm copyraw-bot node deploy-commands.js
 3. Scroll to "Environment variables" and add `DISCORD_TOKEN`, `CLIENT_ID`, and `GUILD_ID` with your values
 4. Deploy the stack
 
-To register commands after the first deploy, open a console on the container in Portainer (or SSH in) and run:
-
-```bash
-docker exec copyraw-bot node deploy-commands.js
-```
+Slash commands are registered automatically on every container start. No manual registration step needed.
 
 The container restarts automatically unless you stop it. To update after a new image is pushed, click "Pull and redeploy" in Portainer or run `docker compose pull && docker compose up -d`.
 
