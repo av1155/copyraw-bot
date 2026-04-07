@@ -3,4 +3,7 @@ services:
     image: ghcr.io/av1155/copyraw-bot:latest
     container_name: copyraw-bot
     restart: unless-stopped
-    env_file: .env
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - CLIENT_ID=${CLIENT_ID}
+      - GUILD_ID=${GUILD_ID}
