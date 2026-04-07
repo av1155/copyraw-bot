@@ -102,9 +102,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const authorId = filtered[0].author.id;
       const authorName = filtered[0].author.displayName;
       const consecutive = [];
+      const MAX_GAP_MS = 60_000; // 1 minute between messages
 
-      for (const msg of filtered) {
+      for (let i = 0; i < filtered.length; i++) {
+        const msg = filtered[i];
         if (msg.author.id !== authorId) break;
+        if (i > 0) {
+          const gap = filtered[i - 1].createdTimestamp - msg.createdTimestamp;
+          if (gap > MAX_GAP_MS) break;
+        }
         consecutive.push(extractContent(msg));
       }
 
