@@ -1,6 +1,6 @@
 # CopyRaw
 
-Lightweight Discord bot for copying raw message content. Two commands, no privileged intents, runs anywhere Docker does.
+Lightweight Discord bot for copying raw message content. Two commands, runs anywhere Docker does.
 
 ## Commands
 
@@ -11,6 +11,48 @@ Right-click any message, go to Apps, and select "Copy Raw" to get the raw markdo
 ### /copyraw (slash command)
 
 Fetches the last 25 messages in the channel, collects all consecutive messages from the most recent author (oldest first), reconstructs the full message from chunked responses, and replies ephemerally.
+
+## Discord Setup
+
+Before deploying the bot, you need to create a Discord application and configure it.
+
+### 1. Create the application
+
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click "New Application" and name it "CopyRaw"
+3. Upload an avatar under General Information if you have one
+
+### 2. Make the bot private (optional but recommended)
+
+Discord requires you to remove the install link before toggling the public bot setting off.
+
+1. Go to **Installation** in the left sidebar
+2. Set **Install Link** to **None** and save
+3. Go to **Bot** in the left sidebar
+4. Under **Authorization Flow**, toggle **Public Bot** to off
+
+### 3. Create the bot and get the token
+
+1. Go to **Bot** in the left sidebar
+2. Click "Reset Token" to generate a bot token
+3. Copy the token and save it somewhere safe (you will not be able to see it again)
+4. Under **Privileged Gateway Intents**, enable **Message Content Intent**. The `/copyraw` command fetches messages via the REST API, which requires this intent to read content from other users and bots.
+
+### 4. Get the Client ID and Guild ID
+
+1. **Client ID**: Go to **OAuth2** in the left sidebar. The Client ID is shown under Client Information.
+2. **Guild ID**: In Discord, enable Developer Mode (Settings > App Settings > Advanced > Developer Mode). Right-click your server name and click "Copy Server ID".
+
+### 5. Add the bot to your server
+
+1. Go to **OAuth2** in the left sidebar
+2. Under **Scopes**, check `bot` and `applications.commands`
+3. Under **Bot Permissions**, check:
+   - Read Message History
+   - Send Messages
+   - Attach Files
+4. Copy the **Generated URL** at the bottom and open it in your browser
+5. Select your server and authorize
 
 ## Quick Start
 
@@ -29,10 +71,14 @@ DISCORD_TOKEN=... CLIENT_ID=... GUILD_ID=... docker compose up -d
 
 1. In Portainer, go to Stacks and click "Add stack"
 2. Paste the contents of `docker-compose.yml`
-3. Scroll to "Environment variables" and add `DISCORD_TOKEN`, `CLIENT_ID`, and `GUILD_ID` with your values
+3. Scroll to "Environment variables" and add:
+   - `DISCORD_TOKEN` (bot token from step 3 above)
+   - `CLIENT_ID` (application client ID from step 4 above)
+   - `GUILD_ID` (your server ID from step 4 above)
+   - `REGISTER_COMMANDS` set to `1`
 4. Deploy the stack
 
-Set `REGISTER_COMMANDS=1` on the first deploy (or after changing command definitions) to register slash commands on container start. Set it back to `0` once commands are registered.
+Once the logs show "Registered 2 commands" and "Ready as CopyRaw#...", change `REGISTER_COMMANDS` back to `0` and redeploy. Commands only need to be registered once, or again after changing command definitions.
 
 The container restarts automatically unless you stop it. To update after a new image is pushed, click "Pull and redeploy" in Portainer or run `docker compose pull && docker compose up -d`.
 
@@ -62,4 +108,4 @@ node index.js
 
 ## Required Intents
 
-Only `Guilds` and `GuildMessages`. No privileged intents needed.
+`Guilds`, `GuildMessages`, and `MessageContent` (privileged). The Message Content intent must be enabled in the Discord Developer Portal under Bot > Privileged Gateway Intents. Without it, the `/copyraw` command cannot read message content from other users.

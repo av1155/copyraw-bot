@@ -13,7 +13,11 @@ if (!token) {
 }
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
 });
 
 client.once(Events.ClientReady, (c) => {
@@ -80,23 +84,25 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     // --- Slash command: /copyraw ---
     if (interaction.isChatInputCommand() && interaction.commandName === 'copyraw') {
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
       const channel = interaction.channel;
       if (!channel) {
-        return await interaction.reply({
-          content: 'Could not access the current channel.',
-          flags: MessageFlags.Ephemeral,
-        });
+        return await interaction.editReply({ content: 'Could not access the current channel.' });
       }
 
       const messages = await channel.messages.fetch({ limit: 25 });
       const sorted = [...messages.values()]; // newest first
       const filtered = sorted.filter(m => m.author.id !== client.user.id && !m.system);
 
+      console.log(`Fetched ${messages.size} messages, ${filtered.length} after filter`);
+      if (filtered.length > 0) {
+        const first = filtered[0];
+        console.log(`First: ${first.author.tag} | content=${first.content?.length || 0} | embeds=${first.embeds.length}`);
+      }
+
       if (filtered.length === 0) {
-        return await interaction.reply({
-          content: 'No messages found in this channel.',
-          flags: MessageFlags.Ephemeral,
-        });
+        return await interaction.editReply({ content: 'No messages found in this channel.' });
       }
 
       const authorId = filtered[0].author.id;
@@ -113,11 +119,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
       const stitched = consecutive.filter(c => c.trim()).join('\n\n');
       const count = consecutive.length;
 
-      return await replyWithContent(
-        interaction,
-        stitched,
-        `Stitched ${count} message${count === 1 ? '' : 's'} from ${authorName}.`,
-      );
+      if (!stitched.trim()) {
+        return await interaction.editReply({ content: 'No text content in this message.' });
+      }
+
+      const file = new AttachmentBuilder(Buffer.from(stitched, 'utf-8'), { name: 'raw.md' });
+      return await interaction.editReply({
+        content: `Stitched ${count} message${count === 1 ? '' : 's'} from ${authorName}.`,
+        files: [file],
+      });
     }
   } catch (error) {
     console.error('Interaction error:', error);
@@ -125,8 +135,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
       content: 'Something went wrong.',
       flags: MessageFlags.Ephemeral,
     };
-    if (interaction.replied || interaction.deferred) {
+    if (interaction.replied) {
       await interaction.followUp(reply);
+    } else if (interaction.deferred) {
+      await interaction.editReply(reply);
     } else {
       await interaction.reply(reply);
     }
