@@ -49,6 +49,30 @@ function replyWithContent(interaction, content) {
   });
 }
 
+function extractContent(msg) {
+  const parts = [];
+
+  if (msg.content?.trim()) {
+    parts.push(msg.content);
+  }
+
+  for (const embed of msg.embeds) {
+    if (embed.title) parts.push(embed.title);
+    if (embed.description) parts.push(embed.description);
+    for (const field of embed.fields) {
+      parts.push(`${field.name}\n${field.value}`);
+    }
+    if (embed.footer?.text) parts.push(embed.footer.text);
+  }
+
+  if (msg.attachments.size > 0) {
+    const names = msg.attachments.map(a => a.name).join(', ');
+    parts.push(`[Attachments: ${names}]`);
+  }
+
+  return parts.join('\n\n');
+}
+
 // ---------------------------------------------------------------------------
 // Interaction handler
 // ---------------------------------------------------------------------------
@@ -58,7 +82,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     // --- Context menu: "Copy Raw" ---
     if (interaction.isMessageContextMenuCommand() && interaction.commandName === 'Copy Raw') {
       const msg = interaction.targetMessage;
-      return await replyWithContent(interaction, msg.content);
+      return await replyWithContent(interaction, extractContent(msg));
     }
 
     // --- Slash command: /copyraw ---
@@ -86,7 +110,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
       for (const msg of sorted) {
         if (msg.author.id !== authorId) break;
-        consecutive.push(msg.content);
+        consecutive.push(extractContent(msg));
       }
 
       // Reverse to chronological (oldest first), then stitch
